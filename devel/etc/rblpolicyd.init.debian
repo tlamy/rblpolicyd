@@ -26,14 +26,18 @@ fi
 test -z "$PORT" && {
   echo "$0: set PORT to some useful value to enable $DESC" >&2
   exit 1;
-fi
+}
+test -z "$USER" && {
+  echo "$0: set USER to some useful value to enable $DESC" >&2
+  exit 1;
+}
 
 #
 #	Function that starts the daemon/service.
 #
 d_start() {
-	start-stop-daemon --start --quiet --pidfile $PIDFILE \
-		--exec $DAEMON
+	start-stop-daemon --start --quiet -c $USER --pidfile $PIDFILE \
+		--exec $DAEMON $PORT
 }
 
 #
@@ -63,7 +67,7 @@ case "$1" in
 	d_stop
 	echo "."
 	;;
-  #reload)
+  reload)
 	#
 	#	If the daemon can reload its configuration without
 	#	restarting (for example, when it is sent a SIGHUP),
