@@ -1,0 +1,25 @@
+Urgent fixes/additions
+======================
+- Fix SIGTERM handling
+  (shutdown takes place at next new connection)
+- Add SIGHUP handler
+  Reload of config file after changes
+- parallel DNS queries
+
+
+Minor fixes/additions
+=====================
+- free configuration linked-list on shutdown
+- remove debugging from parts that simply work
+- write script to parse maillog (spam found by amavis/spamass)
+  to help tweak the weights
+- more statistics (# of dns queries runtime/per conn/per sec)
+
+Other ideas
+===========
+- perhaps rewrite to be multi-threaded
+
+
+Things that won't change
+========================
+- no caching of DNS answers
