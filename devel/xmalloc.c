@@ -19,44 +19,11 @@
 # include <config.h>
 #endif
 
-#if __STDC__
-# define VOID void
-#else
-# define VOID char
-#endif
-
-#include <sys/types.h>
-
-#if STDC_HEADERS
-# include <stdlib.h>
-#else
-VOID *calloc ();
-VOID *malloc ();
-VOID *realloc ();
-void free ();
-#endif
-
-#if ENABLE_NLS
-# include <libintl.h>
-# define _(Text) gettext (Text)
-#else
-# define textdomain(Domain)
-# define _(Text) Text
-#endif
-
+#include "xmalloc.h"
 #include "error.h"
 
 #ifndef EXIT_FAILURE
 # define EXIT_FAILURE 1
-#endif
-
-/* Prototypes for functions defined here.  */
-#if defined (__STDC__) && __STDC__
-static VOID *fixup_null_alloc (size_t n);
-VOID *xmalloc (size_t n);
-VOID *xcalloc (size_t n, size_t s);
-VOID *xrealloc (VOID *p, size_t n);
-char *xstrdup (char *p);
 #endif
 
 

@@ -1,5 +1,5 @@
 bin_PROGRAMS=rblpolicyd
-rblpolicyd_SOURCES=rblpolicyd.c rblpolicyd.1 pidfile.c pidfile.h cfgfile.c cfgfile.h xmalloc.c system.h aclocal.m4 getopt.c getopt1.c getopt.h globals.h server.c snprintf.h snprintf.c
+rblpolicyd_SOURCES=rblpolicyd.c rblpolicyd.1 pidfile.c pidfile.h cfgfile.c cfgfile.h xmalloc.c system.h aclocal.m4 getopt.c getopt1.c getopt.h globals.h server.c snprintf.h snprintf.c thrmgr.h thrmgr.c worker.h worker.c stats.h stats.c
 
 #  uncomment the following if rblpolicyd requires the math library
 #rblpolicyd_LDADD=-lm

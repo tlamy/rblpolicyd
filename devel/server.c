@@ -24,8 +24,6 @@
 #include "config.h"
 #endif
 
-#define __MAIN__
-#include "globals.h"
 
 #include <stdio.h>
 #include <syslog.h>
@@ -41,205 +39,23 @@
 #include <netdb.h>
 #include <signal.h>
 #include <sys/wait.h>
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#include <pthread.h>
+
 #include "system.h"
 
 #include "cfgfile.h"
+#include "thrmgr.h"
+#include "worker.h"
+#include "stats.h"
+#include "globals.h"
 
-static int server(cfgitem_t *rblist, int sock, struct sockaddr *sa, socklen_t salen);
-static void process_request(cfgitem_t *list, int conn);
-
-
-int policyserver(cfgitem_t *list, char *port) {
-  int sock;
-  struct sockaddr *sa = NULL;
-  struct sockaddr_in  saip;
-  struct sockaddr_un  saun;
-  socklen_t salen;
-  char *c;
-  int res;
-
-  if ((res = res_init()) != 0) {
-    syslog(LOG_ERR, "Fatal: Cannot initialize resolver library");
-    return -1;
-  }
-
-  if (port[0] == '/') {
-    dbg("'%s' looks like UNIX socket...\n", port);
-    sock = socket(PF_UNIX, SOCK_STREAM, 0);
-    if (!sock) {
-      syslog(LOG_ERR, "Could not create UNIX socket %s: %s", port, strerror(errno));
-      return -1;
-    }
-    memset(&saun, 0, sizeof(struct sockaddr_un));
-    saun.sun_family = AF_UNIX;
-    strcpy(saun.sun_path, port);
-    sa = (struct sockaddr *) &saun;
-    salen = sizeof(struct sockaddr_un);
-    dbg("Binding UNIX socket...(sa=0x%08x salen=%d)\n", &saun, salen);
-    if (bind(sock, (struct sockaddr *) &saun, salen) != 0) {
-      syslog(LOG_ERR, "Could not bind to UNIX socket %s: %s", port, strerror(errno));
-      close(sock);
-      return -1;
-    }
-  } else if ((c = strchr(port, '/')) != NULL) {
-    /* host/port pair */
-    char *hostname = NULL;
-    char *portname = NULL;
-    struct addrinfo hint;
-    struct addrinfo *addr;
-    struct addrinfo *aip;
-    struct hostent *he;
-    struct servent *se;
-    
-    dbg("'%s' looks like INET host/service pair...\n", port);
-    sock = socket(PF_INET, SOCK_STREAM, 0);
-    if (!sock) {
-      syslog(LOG_ERR, "Could not create UNIX socket %s: %s", port, strerror(errno));
-      return -1;
-    }
-
-    hostname = malloc(c-port+1);
-    memcpy(hostname, port, c-port);
-    hostname[c-port] = '\0';
-    portname = strdup(c+1);
-    
-    memset(&hint, 0, sizeof(hint));
-    hint.ai_socktype = SOCK_STREAM;
-    if ((res = getaddrinfo(hostname, portname, &hint, &addr)) != 0) {
-      syslog(LOG_ERR, "Can not resolve %s/%s: %s", hostname, portname, gai_strerror(res));
-      free(hostname);
-      free(portname);
-      close(sock);
-      return -1;
-    }
-#if 0
-    for (aip = addr, res=0; aip; aip = aip->ai_next, res++) {
-      char res_host[128], res_port[128];
-      getnameinfo(aip->ai_addr, aip->ai_addrlen, res_host, 128, res_port, 128, NI_NUMERICSERV);
-      printf("%d: family=%d  type=%d  proto=%d  host='%s'  port='%s'  name='%s'\n", res, aip->ai_family, aip->ai_socktype, aip->ai_protocol, res_host, res_port, inet_ntoa(((struct sockaddr_in *) (aip->ai_addr))->sin_addr));
-    }
-#endif
-    memcpy(&saip, addr->ai_addr, addr->ai_addrlen);
-    sa = (struct sockaddr *) &saip;
-    salen = sizeof(saip);
-
-    freeaddrinfo(addr);
-    dbg("Binding INET socket...(sa=0x%08x salen=%d)\n", &saip, salen);
-    if (bind(sock, (struct sockaddr *) &saip, salen) != 0) {
-      syslog(LOG_ERR, "Could not bind to INET socket %s: %s", port, strerror(errno));
-      close(sock);
-      return -1;
-    }
-  } else {
-    struct addrinfo hint;
-    struct addrinfo *addr;
-    struct addrinfo *aip;
-    struct hostent *he;
-    struct servent *se;
-
-    dbg("'%s' looks like INET service...\n", port);
-    sock = socket(PF_INET, SOCK_STREAM, 0);
-    if (!sock) {
-      syslog(LOG_ERR, "Could not create UNIX socket %s: %s", port, strerror(errno));
-      return -1;
-    }
-    memset(&hint, 0, sizeof(hint));
-    hint.ai_socktype = SOCK_STREAM;
-    if ((res = getaddrinfo(NULL, port,  &hint, &addr)) != 0) {
-      syslog(LOG_ERR, "Can not resolve service %s: %s", port, gai_strerror(res));
-      close(sock);
-      return -1;
-    }
-#if 0
-    dbg("Lookup returned %d (addr=0x%08x)\n", port, addr);
-    for (aip = addr, res=0; aip; aip = aip->ai_next, res++) {
-      char res_host[128], res_port[128];
-      if((res = getnameinfo(aip->ai_addr, aip->ai_addrlen, res_host, 128, res_port, 128, NI_NUMERICSERV)) == 0) {
-	printf("%d: family=%d  type=%d  proto=%d  host='%s'  port='%s'  name='%s'\n", res, aip->ai_family, aip->ai_socktype, aip->ai_protocol, res_host, res_port, inet_ntoa(((struct sockaddr_in *) (aip->ai_addr))->sin_addr));
-      } else {
-	fprintf(stderr, "getnameinfo failed: %s (syserr: %s)\n", gai_strerror(res), strerror(errno));
-      }
-    }
-#endif
-    memcpy(&saip, addr->ai_addr, addr->ai_addrlen);
-    freeaddrinfo(addr);
-    sa = (struct sockaddr *) &saip;
-    salen = sizeof(struct sockaddr_in);
-    dbg("Binding INET socket...(sa=0x%08x salen=%d)\n", &saip, salen);
-    if (bind(sock, (struct sockaddr *) &saip, salen) != 0) {
-      syslog(LOG_ERR, "Could not bind to INET socket %s: %s", port, strerror(errno));
-      close(sock);
-      return -1;
-    }
-  }
-  if (listen(sock, 255) != 0) {
-    syslog(LOG_ERR, "Could not listen on UNIX socket %s: %s", port, strerror(errno));
-    close(sock);
-    return -1;
-  }
-
-  server(list, sock, sa, salen);
-  syslog(LOG_INFO, "Shutting down listening socket");
-  shutdown(sock, SHUT_RDWR);
-  close(sock);
-  return 0;
-}
-
-static int find_slot(pid_t *table, int max) {
-  int i;
-  for (i=0; i < max; i++) {
-    if (table[i] == 0) {
-      return i;
-    }
-  }
-  return -1;
-}
-
-static int numchilds = 0;
-static pid_t *children = NULL;
-
-static int find_child(pid_t pid, pid_t* childs, int max) {
-  int i;
-  for (i=0; i < max; i++) {
-    if (childs[i] == pid) {
-      return i;
-    }
-  }
-  return -1;
-}
-
-static void sigchld(int signo) {
-  pid_t pid;
-  int status;
-  int slot;
-
-  while ((pid = waitpid(WAIT_ANY, &status, WNOHANG)) > 0) {
-    dbg("Child %lu terminated.", (unsigned long) pid);
-    slot = find_child(pid, children, maxchilds);
-    if (slot < 0) {
-      syslog(LOG_NOTICE, "Received SIGCHLD for unknown pid %lu !!!", (unsigned long) pid);
-    } else {
-      children[slot] = 0;
-      numchilds--;
-    }
-  }
-  if (pid < 0 && errno != ECHILD) {
-    syslog(LOG_ERR, "waitpid(): %s", strerror(errno));
-  }
-  signal (SIGCHLD, sigchld);
-}
 
 static void sigterm(int signo) {
-  int i;
-  syslog(LOG_INFO, "Received SIGTERM - reaping children");
-  terminate = 1;
-
-  for (i=0; i < maxchilds; i++) {
-    if (children[i] > 0) {
-      syslog(LOG_INFO,"Killing child #%d with pid %lu", i, (unsigned long) children[i]);
-      kill(children[i], SIGTERM);
-    }
-  }
+  syslog(LOG_INFO, "Received signal %d - shutting down", signo);
+  appstate = APP_EXIT;
 }
 
 
@@ -304,85 +120,103 @@ static char * read_request(int sock) {
 
 static int num_requests = 0;
 static time_t start = 0;
-static int usedchilds = 0;
 
 static void sigstatus(int sig) {
-  unsigned long run = time(NULL)-start;
-  if (run == 0) run = 1;
-  
-  syslog(LOG_INFO, "Running %lu seconds; %d requests (%.1f req/s); %d max used child slots",
-      run, num_requests, ((float) num_requests / (float) run), usedchilds);
-  signal(SIGUSR1, sigstatus);
+  stats_log();
 }
 
-static int server(cfgitem_t *list, int sock, struct sockaddr *sa, socklen_t salen) {
+int server(int sock, struct sockaddr *sa, socklen_t salen) {
   int ret;
-  pid_t pid;
-  char *request = NULL;
-  char *client  = NULL;
   int conn;
-  int child;
+  cfgitem_t *newlist;
+  struct sigaction sa_term, sa_usr1;
+  sigset_t sigset;
 
-  if(signal (SIGCHLD, sigchld) == SIG_ERR) {
-    syslog(LOG_NOTICE, "Could not set signal handler for child control; not using children");
-    maxchilds=0;
-  }
-  if(signal (SIGUSR1, sigstatus) == SIG_ERR) {
-    syslog(LOG_NOTICE, "Could not set signal handler for status");
-  }
-  if(signal (SIGTERM, sigterm) == SIG_ERR) {
-    syslog(LOG_NOTICE, "Could not set signal handler for termination");
-  }
+  /* Setup signal handling */
+  memset(&sa_term, 0, sizeof(struct sigaction));
+  memset(&sa_usr1, 0, sizeof(struct sigaction));
+  sigfillset(&sigset);
 
-  if (maxchilds > 0) {
-    if ((children = calloc(maxchilds+1, sizeof(pid_t))) == NULL) {
-      syslog(LOG_ERR, "Could not allocate for %d children: %s", maxchilds, strerror(errno));
-      return -1;
-    }
-    memset(children, 0, (maxchilds+1)*sizeof(pid_t));
-  }
+  sa_term.sa_handler = sigterm;
+  sigemptyset(&sa_term.sa_mask);
+  sigaddset(&sa_term.sa_mask, SIGTERM);
+  sigaddset(&sa_term.sa_mask, SIGINT);
+  sigaction(SIGTERM, &sa_term, NULL);
+  sigaction(SIGINT, &sa_term, NULL);
+  sigdelset(&sigset, SIGTERM);
+  sigdelset(&sigset, SIGINT);
+
+  sa_usr1.sa_handler = sigstatus;
+  sigemptyset(&sa_usr1.sa_mask);
+  sigaddset(&sa_usr1.sa_mask, SIGUSR1);
+  sigaction(SIGUSR1, &sa_usr1, NULL);
+  sigdelset(&sigset, SIGUSR1);
+
+  sigprocmask(SIG_SETMASK, &sigset, NULL);
+
+  /* Initialize statistics module */
+  stats_start();
+  
+  /* Accept new network connections */
   start = time(NULL);
-  while (!terminate) {
+  while (appstate != APP_EXIT && appstate != APP_ERROR) {
     socklen_t salen = sizeof(*sa);
     dbg("Waiting for connection");
     ret = accept(sock, sa, &salen);
-    if (!terminate && ret < 0) {
-      syslog(LOG_ERR, "accept() failure: %s", strerror(errno));
+    if (ret < 0) {
+      if (errno != EINTR) {
+	syslog(LOG_ERR, "accept() failure: %s", strerror(errno));
+      } else {
+	dbg("accept(): interrupted; appstate=%d", (int) appstate);
+	if (appstate == APP_RUN) {
+	  continue;
+	}
+	break;
+      }
       close(sock);
-      terminate=-1;
+      if (appstate == APP_RUN) {
+	appstate=APP_ERROR;
+      }
       break;
     }
-    if (!terminate) {
+    switch (appstate) {
+    case APP_RUN:
       conn = ret;
       num_requests++;
       dbg("Accepted connection; sock=%d conn=%d", sock, conn);
-      if (maxchilds > 0) {
-	while ((child = find_slot(children, maxchilds)) < 0) {
-	  syslog(LOG_NOTICE, "%d/%d children are busy; waiting", numchilds, maxchilds);
-	  sleep(1);
-	}
-	dbg("Found child slot #%d", child);
-	pid = fork();
-	if (pid < 0) {
-	  syslog(LOG_ERR, "Could not fork(): %s", strerror(errno));
-	  return -1;
-	}
-	if (pid) {
+      if (maxthreads > 0) {
+	if ((ret = wthread_create(conn)) != 0) {
+	  syslog(LOG_NOTICE, "Could not create new worker thread; closing request: %s", thr_error(ret));
+	  shutdown(conn, SHUT_RDWR);
 	  close(conn);
-	  children[child] = pid;	/* store child pid */
-	  dbg("Child #%d has pid %lu", ++numchilds, (unsigned long) pid);
-	  if (numchilds > usedchilds) {
-	    usedchilds = numchilds;
-	  }
-	} else {
-	  /* child */
-	  close(sock);
-	  process_request(list, conn);
-	  exit(0);
 	}
       } else {
-	process_request(list, conn);
+	worker_th((void *) conn);
       }
+      break;
+
+    case APP_RELOAD:
+      /* TODO: Testing */
+      if((ret = thr_waitcomplete()) != 0) {
+	syslog(LOG_NOTICE, "Could not reload configuration; %d workers still alive", ret);
+	appstate = APP_RUN;	/* perhaps APP_EXIT? */
+	break;
+      }
+      syslog(LOG_INFO, "Reloading configuration from '%s'", cfgpath);
+      newlist = cfg_read(cfgpath);
+      if (!newlist) {
+	syslog(LOG_INFO, "Error loading configuration from '%s', keeping old config", cfgpath);
+      } else {
+	cfg_free(&rblist);
+	rblist = newlist;
+	syslog(LOG_INFO, "Reload ok.");
+      }
+      appstate = APP_RUN;
+      break;
+
+    case APP_EXIT:
+    case APP_ERROR:
+      break;
     }
   }
   return 0;
@@ -414,13 +248,13 @@ char * parse_request(char * const req) {
 
   
  
-static void process_request(cfgitem_t *list, int conn) {
+void process_request(int conn) {
   char *request = NULL;
   char *client = NULL;
   char rqname[1024];
   int score = 0;
   int err = 0;
-  char *rdn = NULL, *c, *r;
+  char *rdn = NULL;
   cfgitem_t *rbl;
   struct hostent *h;
   char *reply = NULL;
@@ -457,7 +291,7 @@ static void process_request(cfgitem_t *list, int conn) {
   if (!err) {
     sprintf(rdn, "%d.%d.%d.%d", o4, o3, o2, o1);
     dbg("Reverse client address: '%s'", rdn);
-    for (rbl = list; rbl && score < 100; rbl = rbl->next) {
+    for (rbl = rblist; rbl && score < 100; rbl = rbl->next) {
       sprintf(rqname, "%s.%s", rdn, rbl->rbldomain);
       dbg("Lookup '%s'", rqname);
       h = gethostbyname(rqname);

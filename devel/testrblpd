@@ -1,0 +1,20 @@
+#!/bin/sh
+# rblpolicyd test script. Connects to the specified policy daemon (via netcat)
+# and asks for the supplied ip address
+# (C) 2005 Thomas Lamy <thomas.lamy@in-online.net>
+# Released under GNU Public License v2
+#
+# Usage:
+# testrblpd <ip> <connection string>
+#
+if [ $# -lt 2 ]; then
+  echo "Too few arguments." >&2
+  echo "Usage: $0 <ip> <connection>" >&2
+  exit 1
+fi
+ip=$1
+shift
+echo "client_address=$ip
+
+" | netcat $*
+

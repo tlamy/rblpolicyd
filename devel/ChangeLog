@@ -1,3 +1,19 @@
+2005-04-05  Thomas Lamy  <thomas.lamy@in-online.net>
+	* Multi-threading is here (in two stages)
+	  Stage 1 (workers) is where client connections are threaded.
+	  Limit is set via the -m <limit> switch, default is 10
+	  Stage 2 (solvers) is where DNS queries are made. The number of
+	  parallel resolvers is _not_ limited. Note that on some thread
+	  implementations (where threads are processes, like Linux 2.4) this
+	  will actually result in more system load.
+	* Fixed some memory leaks (but most if not all of them were one-timers
+	  and not increasing at run-time)
+	* All allocated memory is now properly initialized; valgrind show no
+	  errors
+	* The SIGHUP (reload database) handler is implemented but not active
+	  yet (needs testing)
+	* Added init script for Debian
+
 2005-03-31  Thomas Lamy  <thomas.lamy@in-online.net>
 	* SF.net project approved. Initial CVS upload
 

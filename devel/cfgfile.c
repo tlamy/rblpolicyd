@@ -20,9 +20,14 @@
 #if HAVE_STRINGS_H
 #include <strings.h>
 #endif
+#if HAVE_CTYPE_H
+#include <ctype.h>
+#endif
+#include <sys/types.h>
+#include <sys/socket.h>
 
-#include "globals.h"
 #include "cfgfile.h"
+#include "globals.h"
 
 
 void dbg(const char *fmt, ...) {
@@ -127,10 +132,6 @@ cfgitem_t * cfg_read(char * filename) {
     }
     current->weight = (short) weight;
 
-    last = NULL;
-    for(item = first; item && item->weight > current->weight; item = item->next) {
-      last = item;
-    }
     if (last) {
       last->next = current;
     }
@@ -138,6 +139,7 @@ cfgitem_t * cfg_read(char * filename) {
     if (!first) {
       first = current;
     }
+    last = current;
   }
   fclose(c);
   return first;
@@ -145,13 +147,13 @@ err_cleanup:
   if (c) {
     fclose(c);
   }
-  cfg_free(first);
+  cfg_free(&first);
   return NULL;
 }
 
-void cfg_free(cfgitem_t *item) {
-  cfgitem_t *next;
-  while (item) {
+void cfg_free(cfgitem_t **list) {
+  cfgitem_t *next=NULL, *item;
+  for (item = *list; item; item = next) {
     next = item->next;
     if (item->rbldomain) {
       free (item->rbldomain);
@@ -159,6 +161,7 @@ void cfg_free(cfgitem_t *item) {
     free(item);
     item = next;
   }
+  *list = NULL;
 }
 
 void cfg_dump(cfgitem_t *item) {

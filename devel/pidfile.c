@@ -25,10 +25,15 @@
 
 #include <stdio.h>
 #include <sys/types.h>
+#include <signal.h>
+#include <unistd.h>
 #include <sys/stat.h>
+#include <sys/socket.h>
+#include <pthread.h>
 
-#include "globals.h"
 #include "pidfile.h"
+#include "cfgfile.h"
+#include "globals.h"
 
 
 pid_t pid_get(char *pidfile) {
