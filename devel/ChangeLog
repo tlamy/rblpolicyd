@@ -1,4 +1,10 @@
-2004-12-03  Thomas Lamy  <thomas.lamy@in-online.net>
+2005-03-31  Thomas Lamy  <thomas.lamy@in-online.net>
+	* SF.net project approved. Initial CVS upload
 
-	* rblpolicyd: initial version.
+2005-03-29  Thomas Lamy  <thomas.lamy@in-online.net>
+	* rblpolicyd finally does what it sould (basically).
+	  Created TODO list.
+
+2004-12-03  Thomas Lamy  <thomas.lamy@in-online.net>
+	* project created
 
