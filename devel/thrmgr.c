@@ -121,7 +121,7 @@ int thr_unregister(thrmgr_t *mgr, pthread_t tid) {
       for (nthr=0,thr=mgr->tlist; thr; thr = thr->next) {
 	nthr++;
       }
-      dbg(LOG_INFO,"Unregistered %s %lu (n=%d, ll=%d)\n", mgr->name, (unsigned long) tid, mgr->nthreads, nthr);
+      dbg("Unregistered %s %lu (n=%d, ll=%d)\n", mgr->name, (unsigned long) tid, mgr->nthreads, nthr);
       return 0;
     }
   }
