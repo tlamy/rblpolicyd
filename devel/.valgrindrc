@@ -1,0 +1,6 @@
+--track-fds=yes
+--time-stamp=yes
+--num-callers=8
+--leak-check=yes
+--show-reachable=yes
+
