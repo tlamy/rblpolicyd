@@ -5,6 +5,7 @@ Urgent fixes/additions
 - Add SIGHUP handler
   Reload of config file after changes
 - parallel DNS queries
+- write man page
 
 
 Minor fixes/additions
