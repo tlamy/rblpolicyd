@@ -25,6 +25,6 @@
 #endif
 #include "cfgfile.h"
 
-int server(int sock, struct sockaddr *sa, socklen_t salen);
-char * parse_request(char * const req);
+extern int server(int sock, struct sockaddr *sa, socklen_t salen);
+extern char * parse_request(char * const req);
 

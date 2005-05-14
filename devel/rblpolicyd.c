@@ -89,6 +89,7 @@ main (int argc, char **argv)
   struct sockaddr_un  saun;
   socklen_t salen;
   char *ch;
+  int on = 1;
 
   pthread_mutex_init(&rblist_mutex, NULL);
 
@@ -100,7 +101,7 @@ main (int argc, char **argv)
   maxthreads = 10;
   progname = argv[0];
 
-  openlog("rbl-policyd", LOG_PID, LOG_DAEMON);
+  openlog("rbl-policyd", LOG_PID, LOG_MAIL);
 
   while (1) {
     int option_index = 0;
@@ -254,6 +255,9 @@ main (int argc, char **argv)
     salen = sizeof(saip);
 
     freeaddrinfo(addr);
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0) {
+      perror("setsockopt(SO_REUSEADDR) failed");
+    }
     dbg("Binding INET socket...(sa=0x%08x salen=%d)\n", &saip, salen);
     if (bind(sock, (struct sockaddr *) &saip, salen) != 0) {
       fprintf(stderr, "Could not bind to INET socket %s: %s\n", port, strerror(errno));
@@ -296,6 +300,9 @@ main (int argc, char **argv)
     freeaddrinfo(addr);
     sa = (struct sockaddr *) &saip;
     salen = sizeof(struct sockaddr_in);
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0) {
+      perror("setsockopt(SO_REUSEADDR) failed");
+    }
     dbg("Binding INET socket...(sa=0x%08x salen=%d)\n", &saip, salen);
     if (bind(sock, (struct sockaddr *) &saip, salen) != 0) {
       fprintf(stderr, "Could not bind to INET socket %s: %s\n", port, strerror(errno));

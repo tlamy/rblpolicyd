@@ -29,7 +29,6 @@
 
 
 #include <stdio.h>
-#include <syslog.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -92,7 +91,6 @@ static char * read_request(int sock) {
       }
       return buf;
     } else {
-      syslog(LOG_INFO, "select() returned %d", ret);
       if(bufsize - bread < CHUNK) {
 	bufsize += CHUNK;
 	buf = realloc(buf, bufsize);
@@ -232,11 +230,11 @@ void * worker_th(void *data) {
      * Each resolver signals us it's readiness through pthread_cond_signal() */
     pthread_mutex_lock(&resolvers_);
     while (resolvers) {
-      syslog(LOG_INFO, "Worker waiting for %d/%d resolvers", resolvers, resdata_cnt);
+      // syslog(LOG_DEBUG, "Worker waiting for %d/%d resolvers", resolvers, resdata_cnt);
       pthread_cond_wait(&res_ready_cond, &resolvers_);
     }
     pthread_cond_destroy(&res_ready_cond);
-    syslog(LOG_INFO, "Worker: All resolvers ready");
+    // syslog(LOG_DEBUG, "Worker: All resolvers ready");
     
     score=0;
     for (i=0; i < resdata_cnt; i++) {
@@ -266,6 +264,9 @@ void * worker_th(void *data) {
     free(resdata);
     resdata = NULL;
   } /* endif(!err) */
+  if (!err) {
+    syslog(LOG_INFO, "%s: score %d", client, score);
+  }
   if (!err && score >= 100) {
     dbg("Reply: 'action=REJECT Blocked through %s'", reply);
     write(conn, "action=REJECT Blocked through ", 30);
@@ -310,7 +311,7 @@ void * solver_th(void *data) {
   struct timeval res_begin, res_end;
 
   gettimeofday(&begin, NULL);
-  syslog(LOG_INFO, "(%ld) Lookup '%s'", pthread_self(), r->hostname);
+  // syslog(LOG_DEBUG, "(%ld) Lookup '%s'", pthread_self(), r->hostname);
 
   hstbuflen = 1024;
   /* Allocate buffer, remember to free it to avoid memory leakage.  */
@@ -342,7 +343,7 @@ void * solver_th(void *data) {
   /* Done, signal the worker thread */
   pthread_mutex_lock(r->resolvers_);
   *r->resolvers = *r->resolvers-1;
-  syslog(LOG_INFO, "(%ld) Resolver for '%s' done, %d resolvers left", pthread_self(), r->hostname, *r->resolvers);
+  // syslog(LOG_DEBUG, "(%ld) Resolver for '%s' done, %d resolvers left", pthread_self(), r->hostname, *r->resolvers);
   pthread_cond_broadcast(r->res_ready);
   pthread_mutex_unlock(r->resolvers_);
   gettimeofday(&end, NULL);

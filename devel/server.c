@@ -26,7 +26,6 @@
 
 
 #include <stdio.h>
-#include <syslog.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -48,9 +47,11 @@
 
 #include "cfgfile.h"
 #include "thrmgr.h"
+#include "server.h"
 #include "worker.h"
 #include "stats.h"
 #include "globals.h"
+
 
 
 static void sigterm(int signo) {
@@ -90,7 +91,6 @@ static char * read_request(int sock) {
       }
       return buf;
     } else {
-      syslog(LOG_INFO, "select() returned %d", ret);
       if(bufsize - bread < CHUNK) {
 	bufsize += CHUNK;
 	buf = realloc(buf, bufsize);
