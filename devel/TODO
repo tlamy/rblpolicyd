@@ -1,13 +1,13 @@
 Urgent fixes/additions
 ======================
-- Add SIGHUP handler
+- Handle pid file
+- Test SIGHUP handler
   Reload of config file after changes
 - write man page
 
 
 Minor fixes/additions
 =====================
-- remove debugging from parts that simply work
 - write script to parse maillog (spam found by amavis/spamass)
   to help tweak the weights
 - more statistics (# of dns queries runtime/per conn/per sec)
