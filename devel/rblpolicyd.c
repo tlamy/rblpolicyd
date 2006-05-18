@@ -230,6 +230,8 @@ main (int argc, char **argv)
       exit(EXIT_FAILURE);
       return -1;
     }
+    int opt=1;
+    setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt));
 
     hostname = malloc(ch-port+1);
     memcpy(hostname, port, ch-port);
@@ -276,7 +278,7 @@ main (int argc, char **argv)
     dbg("'%s' looks like INET service...\n", port);
     sock = socket(PF_INET, SOCK_STREAM, 0);
     if (!sock) {
-      fprintf(stderr, "Could not create UNIX socket %s: %s\n", port, strerror(errno));
+      fprintf(stderr, "Could not create INET socket %s: %s\n", port, strerror(errno));
       cfg_free(&rblist);
       free(pidfile);
       free(cfgpath);
@@ -284,6 +286,8 @@ main (int argc, char **argv)
       exit(EXIT_FAILURE);
       return -1;
     }
+    int opt=1;
+    setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt));
     memset(&hint, 0, sizeof(hint));
     hint.ai_socktype = SOCK_STREAM;
     if ((res = getaddrinfo(NULL, port,  &hint, &addr)) != 0) {
