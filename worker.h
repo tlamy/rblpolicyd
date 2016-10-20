@@ -30,8 +30,9 @@
 #include "config.h"
 #endif
 
-extern void * worker_th(void *);
-extern void * solver_th(void *);
+extern void *worker_th(void *);
+
+extern void *solver_th(void *);
 
 #endif
 

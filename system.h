@@ -117,13 +117,17 @@
 
 /* FIXME: Don't use _POSIX_VERSION.  */
 #ifndef _POSIX_VERSION
-off_t lseek ();
+
+off_t lseek();
+
 #endif
 
 #ifdef TM_IN_SYS_TIME
 #include <sys/time.h>
 #else
+
 #include <time.h>
+
 #endif
 
 /* Since major is a function on SVR4, we can't use `ifndef major'.  */
@@ -135,7 +139,7 @@ off_t lseek ();
 #include <sys/sysmacros.h>
 #define HAVE_MAJOR
 #endif
-#ifdef major			/* Might be defined in sys/types.h.  */
+#ifdef major            /* Might be defined in sys/types.h.  */
 #define HAVE_MAJOR
 #endif
 
@@ -155,11 +159,15 @@ off_t lseek ();
 # endif
 # include <string.h>
 #else
+
 # include <strings.h>
-char *memchr ();
+
+char *memchr();
+
 #endif
 
 #include <errno.h>
+
 #ifndef errno
 extern int errno;
 #endif
@@ -169,7 +177,9 @@ extern int errno;
 #include <stdlib.h>
 #undef getopt
 #else /* not STDC_HEADERS */
-char *getenv ();
+
+char *getenv();
+
 #endif /* STDC_HEADERS */
 
 /* The following test is to work around the gross typo in
@@ -187,7 +197,9 @@ char *getenv ();
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
 #else
+
 #include <sys/file.h>
+
 #endif
 
 #ifndef SEEK_SET
@@ -250,7 +262,7 @@ char *getenv ();
 #else /* HAVE_ST_BLOCKS */
 /* Some systems, like Sequents, return st_blksize of 0 on pipes. */
 # define ST_BLKSIZE(statbuf) ((statbuf).st_blksize > 0 \
-			       ? (statbuf).st_blksize : DEV_BSIZE)
+                   ? (statbuf).st_blksize : DEV_BSIZE)
 # if defined(hpux) || defined(__hpux__) || defined(__hpux)
 /* HP-UX counts st_blocks in 1024-byte units.
    This loses when mixing HP-UX and BSD filesystems with NFS.  */
@@ -285,8 +297,10 @@ char *getenv ();
 #  include <alloca.h>
 # else
 #  ifndef _AIX
+
 /* AIX alloca decl has to be the first thing in the file, bletch! */
-char *alloca ();
+char *alloca();
+
 #  endif
 # endif
 #endif
@@ -378,4 +392,4 @@ char *alloca ();
 # define _(Text) Text
 #endif
 
-#define STREQ(a,b) (strcmp((a), (b)) == 0)
+#define STREQ(a, b) (strcmp((a), (b)) == 0)

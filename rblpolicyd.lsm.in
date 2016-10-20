@@ -9,8 +9,8 @@ Description:	rblpolicydd is a policy daemon for Postfix (http://www.postfix.org/
 		description here if appropriate, and to delete these
 		instructions.
 Keywords:	[substitute your keywords here]
-Author: 	thomas.lamy@in-online.net (Thomas Lamy)
-Maintained-by:	thomas.lamy@in-online.net (Thomas Lamy)
+Author: 	thomas.lamy@netwake.de (Thomas Lamy)
+Maintained-by:	thomas.lamy@netwake.de (Thomas Lamy)
 Primary-site:	metlab.unc.edu pub/Linux/apps/some/directory
 		31k rblpolicyd-@VERSION@.tar.gz
 		500  rblpolicyd.lsm

@@ -30,10 +30,15 @@
 #if STDC_HEADERS
 # include <stdlib.h>
 #else
-VOID *calloc ();
-VOID *malloc ();
-VOID *realloc ();
-void free ();
+
+VOID *calloc();
+
+VOID *malloc();
+
+VOID *realloc();
+
+void free();
+
 #endif
 #if HAVE_STRING_H
 #include <string.h>

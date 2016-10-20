@@ -27,27 +27,29 @@
 #include "config.h"
 #endif
 
-#define DEFAULT_CFGFILE	"/etc/rbl-policyd.conf"
+#define DEFAULT_CFGFILE    "/etc/rbl-policyd.conf"
 
-#define NUM_RTT	16
+#define NUM_RTT    16
 
 typedef struct _cfgitem {
-  char *	    rbldomain;		/* RBL Domain */
-  short		    weight;		/* Weight/Score */
-  unsigned int      questions;		/* How often asked */
-  unsigned int      positive;		/* positive answers */
-  unsigned int	    rtt[NUM_RTT];	/* last 16 answer times */
-  unsigned char	    rttindex;		/* Current position in ring buffer */
-  struct _cfgitem * next;
+    char *rbldomain;        /* RBL Domain */
+    short weight;        /* Weight/Score */
+    unsigned int questions;        /* How often asked */
+    unsigned int positive;        /* positive answers */
+    unsigned int rtt[NUM_RTT];    /* last 16 answer times */
+    unsigned char rttindex;        /* Current position in ring buffer */
+    struct _cfgitem *next;
 } cfgitem_t;
 
 #define MAXLINE 1024
 
-cfgitem_t *	cfg_read(char * filename);
-void		cfg_free(cfgitem_t **ptr);
-void		cfg_dump(cfgitem_t *ptr);
+cfgitem_t *cfg_read(char *filename);
 
-void		dbg(const char *fmt, ...);
+void cfg_free(cfgitem_t **ptr);
+
+void cfg_dump(cfgitem_t *ptr);
+
+void dbg(const char *fmt, ...);
 
 #endif
 

@@ -31,10 +31,15 @@
 #endif
 
 extern void stats_worker_thr(int num);
+
 extern void stats_worker_time(struct timeval *start, struct timeval *end);
+
 extern void stats_solver_thr(int num);
+
 extern void stats_solver_time(struct timeval *start, struct timeval *end);
+
 extern void stats_start(void);
+
 extern void stats_log(void);
 
 #endif

@@ -1,4 +1,4 @@
-2005-04-05  Thomas Lamy  <thomas.lamy@in-online.net>
+2005-04-05  Thomas Lamy  <thomas.lamy@netwake.de>
 	* Multi-threading is here (in two stages)
 	  Stage 1 (workers) is where client connections are threaded.
 	  Limit is set via the -m <limit> switch, default is 10
@@ -14,13 +14,13 @@
 	  yet (needs testing)
 	* Added init script for Debian
 
-2005-03-31  Thomas Lamy  <thomas.lamy@in-online.net>
+2005-03-31  Thomas Lamy  <thomas.lamy@netwake.de>
 	* SF.net project approved. Initial CVS upload
 
-2005-03-29  Thomas Lamy  <thomas.lamy@in-online.net>
+2005-03-29  Thomas Lamy  <thomas.lamy@netwake.de>
 	* rblpolicyd finally does what it sould (basically).
 	  Created TODO list.
 
-2004-12-03  Thomas Lamy  <thomas.lamy@in-online.net>
+2004-12-03  Thomas Lamy  <thomas.lamy@netwake.de>
 	* project created
 

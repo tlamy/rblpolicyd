@@ -19,9 +19,11 @@
 
 */
 
-#define DEFAULT_PIDFILE	"/var/run/rblpolicyd.pid"
+#define DEFAULT_PIDFILE    "/var/run/rblpolicyd.pid"
 
 pid_t pid_get(char *pidfile);
+
 pid_t pid_check(char *pidfile);
+
 int pid_write(pid_t pid, const char *pidfile);
 

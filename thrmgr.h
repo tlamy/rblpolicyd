@@ -31,37 +31,44 @@
 #endif
 
 typedef enum {
-  ERR_NONE=0,
-  ERR_THR_TOOMANY,
-  ERR_THR_SYSERR,
-  ERR_THR_APPSTATE
+    ERR_NONE = 0,
+    ERR_THR_TOOMANY,
+    ERR_THR_SYSERR,
+    ERR_THR_APPSTATE
 } thmgr_err;
 
 
 /* Thread info */
 typedef struct thrd {
-  pthread_t      tid;
-  struct timeval start;
-  struct thrd *  next;
-  struct thrd *  last;
+    pthread_t tid;
+    struct timeval start;
+    struct thrd *next;
+    struct thrd *last;
 } thrd_t, *tlist_t;
 
 /* Thread manager data */
 typedef struct thrmgr {
-  pthread_mutex_t lock;
-  char            name[32];
-  unsigned int	  nthreads;
-  tlist_t	  tlist;
+    pthread_mutex_t lock;
+    char name[32];
+    unsigned int nthreads;
+    tlist_t tlist;
 } thrmgr_t;
 
 
 int thr_register(thrmgr_t *mgr, pthread_t tid);
+
 int thr_unregister(thrmgr_t *mgr, pthread_t tid);
+
 int thr_waitcomplete(void);
+
 int wthread_create(int conn);
+
 void wthread_exit(pthread_t tid);
+
 int rthread_create(void *data);
+
 void rthread_exit(pthread_t tid);
+
 const char *thr_error(thmgr_err err);
 
 #endif

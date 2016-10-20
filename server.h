@@ -23,8 +23,10 @@
 #if HAVE_CONFIG_H
 #include "config.h"
 #endif
+
 #include "cfgfile.h"
 
 extern int server(int sock, struct sockaddr *sa, socklen_t salen);
-extern char * parse_request(char * const req);
+
+extern char *parse_request(char *const req);
 

@@ -32,45 +32,39 @@
 int xmalloc_exit_failure = EXIT_FAILURE;
 
 static VOID *
-fixup_null_alloc (n)
-     size_t n;
-{
-  VOID *p;
+fixup_null_alloc(size_t n) {
+    VOID *p;
 
-  p = 0;
-  if (n == 0)
-    p = malloc ((size_t) 1);
-  if (p == 0)
-    error (xmalloc_exit_failure, 0, _("Memory exhausted"));
-  return p;
+    p = 0;
+    if (n == 0)
+        p = malloc((size_t) 1);
+    if (p == 0)
+        error(xmalloc_exit_failure, 0, _("Memory exhausted"));
+    return p;
 }
 
 /* Allocate N bytes of memory dynamically, with error checking.  */
 
 VOID *
-xmalloc (n)
-     size_t n;
-{
-  VOID *p;
+xmalloc(size_t n) {
+    VOID *p;
 
-  p = malloc (n);
-  if (p == 0)
-    p = fixup_null_alloc (n);
-  return p;
+    p = malloc(n);
+    if (p == 0)
+        p = fixup_null_alloc(n);
+    return p;
 }
 
 /* Allocate memory for N elements of S bytes, with error checking.  */
 
 VOID *
-xcalloc (n, s)
-     size_t n, s;
-{
-  VOID *p;
+xcalloc(size_t n, size_t s) {
+    VOID *p;
 
-  p = calloc (n, s);
-  if (p == 0)
-    p = fixup_null_alloc (n);
-  return p;
+    p = calloc(n, s);
+    if (p == 0)
+        p = fixup_null_alloc(n);
+    return p;
 }
 
 /* Change the size of an allocated block of memory P to N bytes,
@@ -78,27 +72,22 @@ xcalloc (n, s)
    If P is NULL, run xmalloc.  */
 
 VOID *
-xrealloc (p, n)
-     VOID *p;
-     size_t n;
-{
-  if (p == 0)
-    return xmalloc (n);
-  p = realloc (p, n);
-  if (p == 0)
-    p = fixup_null_alloc (n);
-  return p;
+xrealloc(VOID *p, size_t n) {
+    if (p == 0)
+        return xmalloc(n);
+    p = realloc(p, n);
+    if (p == 0)
+        p = fixup_null_alloc(n);
+    return p;
 }
 
 /* Make a copy of a string in a newly allocated block of memory. */
 
 char *
-xstrdup (str)
-     char *str;
-{
-  VOID *p;
+xstrdup(char *str) {
+    VOID *p;
 
-  p = xmalloc (strlen (str) + 1);
-  strcpy (p, str);
-  return p;
+    p = xmalloc(strlen(str) + 1);
+    strcpy(p, str);
+    return p;
 }

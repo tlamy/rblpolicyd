@@ -1,7 +1,7 @@
 #!/bin/sh
 # rblpolicyd test script. Connects to the specified policy daemon (via netcat)
 # and asks for the supplied ip address
-# (C) 2005 Thomas Lamy <thomas.lamy@in-online.net>
+# (C) 2005 Thomas Lamy <thomas.lamy@netwake.de>
 # Released under GNU Public License v2
 #
 # Usage:

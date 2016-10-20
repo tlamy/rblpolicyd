@@ -37,56 +37,56 @@
 
 
 pid_t pid_get(char *pidfile) {
-  FILE *fp;
-  int c;
-  pid_t pid = 0;
+    FILE *fp;
+    int c;
+    pid_t pid = 0;
 
-  if ((fp = fopen(pidfile, "r")) == NULL) {
-    return -1;
-  }
-  while ((c = fgetc(fp)) != EOF) {
-    if (c >= '0' && c <= '9') {
-      pid = 10*pid + (c-'0');
-    } else {
-      break;
+    if ((fp = fopen(pidfile, "r")) == NULL) {
+        return -1;
     }
-  }
-  fclose(fp);
-  return pid;
+    while ((c = fgetc(fp)) != EOF) {
+        if (c >= '0' && c <= '9') {
+            pid = 10 * pid + (c - '0');
+        } else {
+            break;
+        }
+    }
+    fclose(fp);
+    return pid;
 }
 
 pid_t pid_check(char *pidfile) {
-  struct stat st;
-  pid_t pid;
-  if (stat(pidfile, &st) == 0) {
-    pid = pid_get(pidfile);
-    if (pid <= 0) {
-      return 0;
+    struct stat st;
+    pid_t pid;
+    if (stat(pidfile, &st) == 0) {
+        pid = pid_get(pidfile);
+        if (pid <= 0) {
+            return 0;
+        }
+        if (kill(pid, 0) == 0) {
+            fprintf(stderr, "Process %d is still running\n", pid);
+            return -1;
+        }
+        if (S_ISREG(st.st_mode)) {
+            dbg("Removing stale pidfile %s\n", pidfile);
+            unlink(pidfile);
+        } else {
+            fprintf(stderr, "Stale pidfile %s not removed: Not a regular file\n", pidfile);
+            return -1;
+        }
     }
-    if (kill(pid, 0) == 0) {
-      fprintf(stderr, "Process %d is still running\n", pid);
-      return -1;
-    }
-    if(S_ISREG(st.st_mode)) {
-      dbg("Removing stale pidfile %s\n", pidfile);
-      unlink(pidfile);
-    } else {
-      fprintf(stderr, "Stale pidfile %s not removed: Not a regular file\n", pidfile);
-      return -1;
-    }
-  }
-  /* no pidfile */
-  return 0;
+    /* no pidfile */
+    return 0;
 }
-  
+
 int pid_write(pid_t pid, const char *pidfile) {
-  FILE *fp;
-  int res1 = 0, res2 = 0;
-  
-  if ((fp = fopen(pidfile, "w")) == NULL) {
-    return -1;
-  }
-  res1 = fprintf(fp, "%ld", (long) pid);
-  res2 = fclose(fp);
-  return (res1 > 0 && res2 == 0) ? 0 : -1;
+    FILE *fp;
+    int res1 = 0, res2 = 0;
+
+    if ((fp = fopen(pidfile, "w")) == NULL) {
+        return -1;
+    }
+    res1 = fprintf(fp, "%ld", (long) pid);
+    res2 = fclose(fp);
+    return (res1 > 0 && res2 == 0) ? 0 : -1;
 }

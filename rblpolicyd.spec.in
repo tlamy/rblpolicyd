@@ -1,6 +1,6 @@
 # rblpolicyd.spec
 #
-# Copyright (c) 2004 Thomas Lamy thomas.lamy@in-online.net
+# Copyright (c) 2004 Thomas Lamy thomas.lamy@netwake.de
 #
 %define name rblpolicyd
 %define version @VERSION@
@@ -19,7 +19,7 @@ Group: Application/Misc
 #Distribution:
 #Icon:
 #URL:
-#Packager: Thomas Lamy thomas.lamy@in-online.net
+#Packager: Thomas Lamy thomas.lamy@netwake.de
 
 # source + patches
 Source: %{name}-%{version}.tar.gz
